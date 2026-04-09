@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"image/png"
 	"log"
@@ -17,7 +19,10 @@ func main() {
 	payload := fmt.Sprintf("%s:%s", gasBalloonID, balloonSerialNumber)
 	outputFile := "datamatrix.png"
 
-	code, err := datamatrix.Encode(payload)
+	sum := sha256.Sum256([]byte(payload))
+	hash := hex.EncodeToString(sum[:])
+
+	code, err := datamatrix.Encode(hash)
 	if err != nil {
 		log.Println("encode failed:", err)
 		return
