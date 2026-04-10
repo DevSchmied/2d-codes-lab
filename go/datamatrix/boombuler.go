@@ -1,43 +1,37 @@
-package main
+package datamatrix
 
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"image/png"
 	"log"
 	"os"
 
 	"github.com/boombuler/barcode"
-	"github.com/boombuler/barcode/datamatrix"
+	dm "github.com/boombuler/barcode/datamatrix"
 )
 
-func main() {
-	gasBalloonID := "GB-100045@!$%^&"
-	balloonSerialNumber := "SN-2026-000381@!$%^&"
-
-	payload := fmt.Sprintf("%s:%s", gasBalloonID, balloonSerialNumber)
-	outputFile := "datamatrix.png"
+func GenerateDataMatrixWithBoombuler(payload, outputFile string) error {
 
 	sum := sha256.Sum256([]byte(payload))
 	hash := hex.EncodeToString(sum[:])
 
-	code, err := datamatrix.Encode(hash)
+	code, err := dm.Encode(hash)
 	if err != nil {
 		log.Println("encode failed:", err)
-		return
+		return err
 	}
 
 	scaled, err := barcode.Scale(code, 300, 300)
 	if err != nil {
 		log.Println("scale failed:", err)
-		return
+		return err
 	}
 
 	file, err := os.Create(outputFile)
 	if err != nil {
 		log.Println("file creation failed:", err)
-		return
+		return err
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
@@ -47,8 +41,9 @@ func main() {
 
 	if err := png.Encode(file, scaled); err != nil {
 		log.Println("png encoding failed:", err)
-		return
+		return err
 	}
 
 	log.Println("Data Matrix successfully created:", outputFile)
+	return nil
 }
